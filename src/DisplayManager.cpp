@@ -13,17 +13,16 @@ DMAMEM uint16_t fb[H * W];
 void onRestart() {
   Serial.println("Restart clicked");
   currentPlayingChordIndex = 0; // Réinitialiser l'index du chord en cours
+  oldPlayingChordIndex = -1; // Réinitialiser l'ancien index du chord
   // ici ton code restart
 }
 
-IconButton restart(120, 0, 48, onRestart); // Bouton de redémarrage
+IconButton restart(150, H - 50, 48, onRestart); // Bouton de redémarrage
 
-// Fonction de map + inversion des axes
 void mapTouchToScreen(int raw_x, int raw_y, int &screen_x, int &screen_y) {
-    // Inversion des axes : X tactile -> Y écran, Y tactile -> X écran
-    screen_x = map(raw_y, TS_MINY, TS_MAXY, 0, W);
-    screen_y = map(raw_x, TS_MINX, TS_MAXX, H, 0);
-    
+
+    screen_x = map(raw_y, TS_MINY, TS_MAXY, W, 0);
+    screen_y = map(raw_x, TS_MINX, TS_MAXX, 0, H);
     // Limiter les débordements éventuels
     screen_x = constrain(screen_x, 0, W - 1);
     screen_y = constrain(screen_y, 0, H - 1);
@@ -46,24 +45,10 @@ void checkTouch() {
     }
 }
 
-uint16_t RGB24_to_RGB565(uint32_t color24) {
-    uint8_t r = (color24 >> 16) & 0xFF;
-    uint8_t g = (color24 >> 8) & 0xFF;
-    uint8_t b = color24 & 0xFF;
-
-    uint16_t r5 = (r * 31 + 15) / 255;
-    uint16_t g6 = (g * 63 + 31) / 255;
-    uint16_t b5 = (b * 31 + 15) / 255;
-
-    uint16_t color565 = (r5 << 11) | (g6 << 5) | b5;
-
-    return color565;  // PAS DE SWAP !!!
-}
-
 void initDisplay() {
     //tft.output(&Serial);                // output debug infos to serial port.  
     while (!tft.begin(SPI_SPEED_DISPLAY));      // init the display
-    tft.setRotation(1);                 // start in portrait mode 240x320
+    tft.setRotation(3);                 // start in portrait mode 240x320
     tft.setFramebuffer(internal_fb);    // set the internal framebuffer (enables double buffering)
     tft.setDiffBuffers(&diff1, &diff2); // set 2 diff buffers -> enables diffenrential updates. 
     tft.setRefreshRate(90);  // start with a screen refresh rate around 40hz
@@ -189,15 +174,15 @@ void drawCircle(int x, int y, int radius, uint16_t color, bool fill, int thickne
 }
 void drawNote(int corde, int fret, bool fill, uint16_t color) {
     int x, y;
-    y = H - TOP_BORDER - (corde - 1) * CORDS_ECART;
+    y = BOTTOM_BORDER + (corde - 1) * CORDS_ECART;
     if (fret == 0) {
-        x = W - LEFT_BORDER;
+        x = LEFT_BORDER;
     }
     else if (fret == 1) {
-        x = W - LEFT_BORDER - 0.5 * FRET_ECART;
+        x = LEFT_BORDER + 0.5 * FRET_ECART;
     }
     else {
-        x = W - LEFT_BORDER - 0.5 * FRET_ECART - (fret - 1) * FRET_ECART;
+        x = LEFT_BORDER + 0.5 * FRET_ECART + (fret - 1) * FRET_ECART;
     }
 
     drawCircle(x, y, 10,color, fill, 1);
@@ -205,29 +190,18 @@ void drawNote(int corde, int fret, bool fill, uint16_t color) {
 
 void drawTabulation() {
 
-    drawRectangle(RIGHT_BORDER, BOTTOM_BORDER, W -(RIGHT_BORDER + LEFT_BORDER), H -(TOP_BORDER + BOTTOM_BORDER), 3, ILI9341_T4_COLOR_BLACK);
+    drawRectangle(LEFT_BORDER, BOTTOM_BORDER, W -(RIGHT_BORDER + LEFT_BORDER), H -(TOP_BORDER + BOTTOM_BORDER), 3, ILI9341_T4_COLOR_BLACK);
     
     // cords lines
-    drawLine(RIGHT_BORDER, BOTTOM_BORDER + CORDS_ECART, W - LEFT_BORDER - 1, BOTTOM_BORDER + CORDS_ECART, 3, ILI9341_T4_COLOR_BLACK);
-    drawLine(RIGHT_BORDER, BOTTOM_BORDER + 2 * CORDS_ECART, W - LEFT_BORDER - 1, BOTTOM_BORDER + 2 * CORDS_ECART, 3, ILI9341_T4_COLOR_BLACK);
-    drawLine(RIGHT_BORDER, BOTTOM_BORDER + 3 * CORDS_ECART, W - LEFT_BORDER - 1, BOTTOM_BORDER + 3 * CORDS_ECART, 3, ILI9341_T4_COLOR_BLACK);
-    drawLine(RIGHT_BORDER, BOTTOM_BORDER + 4 * CORDS_ECART, W - LEFT_BORDER - 1, BOTTOM_BORDER + 4 * CORDS_ECART, 3, ILI9341_T4_COLOR_BLACK);
+    drawLine(LEFT_BORDER, BOTTOM_BORDER + CORDS_ECART, W - RIGHT_BORDER - 1, BOTTOM_BORDER + CORDS_ECART, 3, ILI9341_T4_COLOR_BLACK);
+    drawLine(LEFT_BORDER, BOTTOM_BORDER + 2 * CORDS_ECART, W - RIGHT_BORDER - 1, BOTTOM_BORDER + 2 * CORDS_ECART, 3, ILI9341_T4_COLOR_BLACK);
+    drawLine(LEFT_BORDER, BOTTOM_BORDER + 3 * CORDS_ECART, W - RIGHT_BORDER - 1, BOTTOM_BORDER + 3 * CORDS_ECART, 3, ILI9341_T4_COLOR_BLACK);
+    drawLine(LEFT_BORDER, BOTTOM_BORDER + 4 * CORDS_ECART, W - RIGHT_BORDER - 1, BOTTOM_BORDER + 4 * CORDS_ECART, 3, ILI9341_T4_COLOR_BLACK);
 
     // frets lines
-    drawLine(RIGHT_BORDER + FRET_ECART, BOTTOM_BORDER, RIGHT_BORDER + FRET_ECART, H - TOP_BORDER - 1, 1, ILI9341_T4_COLOR_BLACK);
-    drawLine(RIGHT_BORDER + 2 * FRET_ECART, BOTTOM_BORDER, RIGHT_BORDER + 2 * FRET_ECART, H - TOP_BORDER - 1, 1, ILI9341_T4_COLOR_BLACK);
-    drawLine(RIGHT_BORDER + 3 * FRET_ECART, BOTTOM_BORDER, RIGHT_BORDER + 3 * FRET_ECART, H - TOP_BORDER - 1, 1, ILI9341_T4_COLOR_BLACK);
-}
-
-void getNotePosition(int corde, int fret, int &x, int &y) {
-  y = W - LEFT_BORDER - (corde - 1) * CORDS_ECART;
-  if (fret == 0) {
-    x = H - TOP_BORDER;
-  } else if (fret == 1) {
-    x = H - TOP_BORDER - 0.5 * FRET_ECART;
-  } else {
-    x = H - TOP_BORDER - 0.5 * FRET_ECART - (fret - 1) * FRET_ECART;
-  }
+    drawLine(LEFT_BORDER + FRET_ECART, BOTTOM_BORDER, LEFT_BORDER + FRET_ECART, H - TOP_BORDER - 1, 1, ILI9341_T4_COLOR_BLACK);
+    drawLine(LEFT_BORDER + 2 * FRET_ECART, BOTTOM_BORDER, LEFT_BORDER + 2 * FRET_ECART, H - TOP_BORDER - 1, 1, ILI9341_T4_COLOR_BLACK);
+    drawLine(LEFT_BORDER + 3 * FRET_ECART, BOTTOM_BORDER, LEFT_BORDER + 3 * FRET_ECART, H - TOP_BORDER - 1, 1, ILI9341_T4_COLOR_BLACK);
 }
 
 void updateDisplay() {

@@ -10,15 +10,15 @@
 
 LedController ledController;
 
-void UpdateDisplayThread() {      //TODO modifier drawtab set rot drawnote... leds bloque quand restart... goertzel...
+void UpdateDisplayThread() {      //TODO leds bloque quand ca arrive a la fin et restart... goertzel...
   while (true) {
     clearDisplay(ILI9341_T4_COLOR_WHITE);
     drawTabulation();
-    drawIcon(W - 50, 0, play_icon, 48, 48); // play
-    drawIcon(W - 100, 0, pause_icon, 48, 48); // pause
-    drawIcon(W - 150, 0, stop_icon, 48, 48); // stop
-    drawIcon(W - 200, 0, restart_icon, 48, 48); // rewind
-    drawIcon(0, H - 50, settings_icon, 48, 48); // next
+    drawIcon(0, H - 50, play_icon, 48, 48); // play
+    drawIcon(50, H - 50, pause_icon, 48, 48); // pause
+    drawIcon(100, H - 50, stop_icon, 48, 48); // stop
+    drawIcon(150, H - 50, restart_icon, 48, 48); // rewind
+    drawIcon(W - 50, 0, settings_icon, 48, 48); // next
     if (currentPlayingChordIndex < currentSong.chordCount) {
       Chord& chord = currentSong.chords[currentPlayingChordIndex];
       drawNote(chord.notes->corde, chord.notes->caseFret, true, chord.notes->colorDisplay);
@@ -48,9 +48,9 @@ void UpdateAudioThread() {
 }
 
 void updateLedsThread() {
-    int oldChordIndex = -1;
+    //int oldChordIndex = -1;
     while (true) {
-        if (currentPlayingChordIndex != oldChordIndex) {
+        if (currentPlayingChordIndex != oldPlayingChordIndex) {
             ledController.clear();
             Chord& chord = currentSong.chords[currentPlayingChordIndex];
             for (uint8_t i = 0; i < chord.noteCount; ++i) {
@@ -60,7 +60,7 @@ void updateLedsThread() {
                 ledController.setLed(i, CRGB::Yellow); // ALLUME les LEDs au-dessus de la hauteur de la main
             }
             ledController.show();
-            oldChordIndex = currentPlayingChordIndex;
+            //old = currentPlayingChordIndex;
         }
         threads.delay(40);
     }
@@ -72,7 +72,7 @@ void setup() {
   initAudio();
   ledController.begin();
   clearDisplay(ILI9341_T4_COLOR_WHITE);
-  delay(5000);
+  //delay(5000);
   Serial.println("Setup started.");
   printFreeMemory(); // Affiche la mémoire libre au démarrage
   SD.begin(BUILTIN_SDCARD);

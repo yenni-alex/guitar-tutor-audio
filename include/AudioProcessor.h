@@ -47,6 +47,7 @@ public:
 
 extern Song currentSong;
 extern volatile int currentPlayingChordIndex;
+extern volatile int oldPlayingChordIndex;
 extern const int totalChords;
 
 void initAudio();
