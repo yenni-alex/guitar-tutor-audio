@@ -14,11 +14,13 @@ void LedController::begin() {
     show();
 }
 
-void LedController::setLed(int index, CRGB color) {
+void LedController::setLed(int index, CRGB color, uint8_t brightness) {
     if (index >= 0 && index < NUM_LEDS) {
         leds[index] = color;
+        leds[index].nscale8(brightness);
     }
 }
+
 
 void LedController::clear() {
     fill_solid(leds, NUM_LEDS, CRGB::Black);

@@ -10,7 +10,7 @@ public:
 
     LedController();
     void begin();
-    void setLed(int index, CRGB color);
+    void setLed(int index, CRGB color, uint8_t brightness);
     void clear();
     void show();
 };

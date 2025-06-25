@@ -82,16 +82,23 @@ void updateLedsThread() {
             Chord& chord = currentSong.chords[currentPlayingChordIndex];
             Serial.println("etape 2");
             for (uint8_t i = 0; i < chord.noteCount; ++i) {
-                ledController.setLed(chord.notes[i].led, chord.notes[i].colorLed);
+                ledController.setLed(chord.notes[i].led, chord.notes[i].colorLed, 100);
                 Serial.println("etape 3");
             }
+            // Cette partie sert a allumer les LEDs de l'accord suivant si il existe
+            //if(currentPlayingChordIndex + 1 < currentSong.chordCount) {
+            //    Chord& nextChord = currentSong.chords[currentPlayingChordIndex + 1];
+            //    for (uint8_t i = 0; i < nextChord.noteCount; ++i) {
+            //        ledController.setLed(nextChord.notes[i].led, nextChord.notes[i].colorLed, 15); // Dim les LEDs de l'accord suivant
+            //    }
+            //}
             for (int8_t i = NUM_LEDS - 1; i >= chord.heightOfHand; --i) { /// YA un beug ici. tout s allume quand j ai fini mais au moins ca marche et c est joli
-                ledController.setLed(i, CRGB::Yellow); // ALLUME les LEDs au-dessus de la hauteur de la main
+                ledController.setLed(i, CRGB::Yellow, 100); // ALLUME les LEDs au-dessus de la hauteur de la main
                 Serial.println("etape 4");
             }
             ledController.show();
             Serial.println("etape 5");
-            //old = currentPlayingChordIndex;
+  
           
         }
         threads.delay(100);
@@ -105,16 +112,16 @@ void setup() {
   initAudio();
   ledController.begin();
   clearDisplay(ILI9341_T4_COLOR_WHITE);
-  //delay(5000);
+  delay(5000);
   Serial.println("Setup started.");
   printFreeMemory(); // Affiche la mémoire libre au démarrage
   SD.begin(BUILTIN_SDCARD);
   Serial.println("SD card initialized");
-  if (!SD.exists("/test_gladiator.xml")) {
+  if (!SD.exists("/test_gladiator_poly.xml")) {
     Serial.println("Fichier test_gladiator.xml introuvable");
     return;
   }
-  loadSongFromXML("/test_gladiator.xml");
+  loadSongFromXML("/test_gladiator_poly.xml");
   Serial.println("Song loaded from XML.");
   printFreeMemory(); // Affiche la mémoire libre après l'initialisation de la SD
   Serial.print("Accords lus: ");
@@ -140,7 +147,7 @@ void setup() {
   if (currentSong.chordCount > 0) {
     Chord& chord = currentSong.chords[0];
     for (uint8_t i = 0; i < chord.noteCount; ++i) {
-      ledController.setLed(chord.notes[i].led, chord.notes[i].colorLed);
+      ledController.setLed(chord.notes[i].led, chord.notes[i].colorLed, 100);
     }
     ledController.show();
   }
