@@ -20,14 +20,13 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
   drawIcon(150, H - 50, restart_icon, 48, 48); // rewind
   drawIcon(W - 50, 0, settings_icon, 48, 48); // next
   drawTabulation();
-
+  bool firstTime = true;
   int oldPlayingChordIndexDisplay = -1;
   while (true) {
+    clearTabRegion();
+    drawTabulation();
     
     uint32_t currentTime = isPlaying ? millis() - baseTime : pausedTime - baseTime;
-    //Serial.print("Current time: ");
-    //Serial.println(currentTime);
-    // Parcourir les 3 prochains accords (max)
 
     if(currentPlayingChordIndex < currentSong.chordCount) {
 
@@ -35,16 +34,29 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
 
       for(uint8_t i = 0; i < chord.noteCount; ++i) {
         Note& note = chord.notes[i];
-
-        // Dessiner la note sur le manche
+        if(firstTime) {
+          note.currentX = W + getTargetX(note.caseFret);
+        }
+        else {
+          note.currentX -= 2; // Déplacement de la note vers la gauche
+          Serial.print("Note currentX: ");
+          Serial.println(note.currentX);
+        }
+        
+        if(note.currentX < W - 20) {
+          int y = TOP_BORDER + (note.corde - 1) * CORDS_ECART;
+          drawCircle(note.currentX, y, 10, note.colorDisplay, false, 2); // Dessine un cercle pour la note
+        }
         drawNote(note.corde, note.caseFret, true, note.colorDisplay);
       }
+      firstTime = false; // Ne redessine les notes qu'une fois par accord
     }
     if(currentPlayingChordIndex != oldPlayingChordIndexDisplay) {
-      clearTabRegion();
-      drawTabulation();
+      
       oldPlayingChordIndexDisplay = currentPlayingChordIndex;
+      firstTime = true; // Réinitialise pour redessiner les notes
     }
+
     checkTouch();
     updateDisplay();
     //threads.delay(20);
@@ -71,19 +83,13 @@ void UpdateAudioThread() {
 void updateLedsThread() {
     //int oldChordIndex = -1;
     while (true) {
-      Serial.print("currentPlayingChordIndex: ");
-      Serial.println(currentPlayingChordIndex);
-      Serial.print("oldPlayingChordIndex: ");
-      Serial.println(oldPlayingChordIndex);
+
         if (currentPlayingChordIndex != oldPlayingChordIndex) {
           
             ledController.clear();
-            Serial.println("etape 1");
             Chord& chord = currentSong.chords[currentPlayingChordIndex];
-            Serial.println("etape 2");
             for (uint8_t i = 0; i < chord.noteCount; ++i) {
                 ledController.setLed(chord.notes[i].led, chord.notes[i].colorLed, 100);
-                Serial.println("etape 3");
             }
             // Cette partie sert a allumer les LEDs de l'accord suivant si il existe
             //if(currentPlayingChordIndex + 1 < currentSong.chordCount) {
@@ -94,10 +100,8 @@ void updateLedsThread() {
             //}
             for (int8_t i = NUM_LEDS - 1; i >= chord.heightOfHand; --i) { /// YA un beug ici. tout s allume quand j ai fini mais au moins ca marche et c est joli
                 ledController.setLed(i, CRGB::Yellow, 100); // ALLUME les LEDs au-dessus de la hauteur de la main
-                Serial.println("etape 4");
             }
             ledController.show();
-            Serial.println("etape 5");
   
           
         }
