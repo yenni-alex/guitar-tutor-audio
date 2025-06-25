@@ -18,9 +18,10 @@ struct IconButton {
 };
 
 void checkTouch();
-
+int getTargetX(int fret); //TEST ANNIMATION
 void initDisplay();
 void clearDisplay(uint16_t color = 0);
+void clearTabRegion();
 void drawIcon(int x, int y, const uint16_t* icon, int w, int h);
 void drawLine(int x0, int y0, int x1, int y1, int thickness, uint16_t color);
 void drawRectangle(int x, int y, int width, int height, int thickness, uint16_t color);

@@ -1,15 +1,27 @@
 #include "global.h"
+// variables pour compteur
+bool isPlaying = false;
+uint32_t baseTime = 0;      // moment où on a commencé à jouer
+uint32_t pausedTime = 0;    // moment où on a mis en pause
 
-extern "C" char* sbrk(int incr);
+extern unsigned long _heap_start;
+extern unsigned long _heap_end;
+extern char *__brkval;
+
+int freeram() {
+  return (char *)&_heap_end - __brkval;
+}
+
 void printFreeMemory() {
-    char stack_top;
-    char* heap_top = sbrk(0);
-    Serial.print("Heap: ");
-    Serial.println((int)heap_top, HEX);
-    Serial.print("Stack: ");
-    Serial.println((int)&stack_top, HEX);
-    Serial.print("Free memory estimate: ");
-    Serial.println((int)&stack_top - (int)heap_top);
+    int freeMem = freeram();
+    Serial.print("Free memory: ");
+    Serial.println(freeMem);
+    //Serial.print("Heap start: ");
+    //Serial.println((unsigned long)&_heap_start, HEX);
+    //Serial.print("Heap end: ");
+    //Serial.println((unsigned long)&_heap_end, HEX);
+    //Serial.print("Brkval: ");
+    //Serial.println((unsigned long)__brkval, HEX);
 }
 
 CRGB parseColorLed(int colorInt) {

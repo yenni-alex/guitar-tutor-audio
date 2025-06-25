@@ -10,19 +10,40 @@
 
 LedController ledController;
 
-void UpdateDisplayThread() {      //TODO leds bloque quand ca arrive a la fin et restart... goertzel...
-  while (true) {
-    clearDisplay(ILI9341_T4_COLOR_WHITE);
-    drawTabulation();
-    drawIcon(0, H - 50, play_icon, 48, 48); // play
-    drawIcon(50, H - 50, pause_icon, 48, 48); // pause
-    drawIcon(100, H - 50, stop_icon, 48, 48); // stop
-    drawIcon(150, H - 50, restart_icon, 48, 48); // rewind
-    drawIcon(W - 50, 0, settings_icon, 48, 48); // next
-    if (currentPlayingChordIndex < currentSong.chordCount) {
-      Chord& chord = currentSong.chords[currentPlayingChordIndex];
-      drawNote(chord.notes->corde, chord.notes->caseFret, true, chord.notes->colorDisplay);
+void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec taille stack thread voir consommation ram goertzel vs fFT
+  Serial.println("UpdateDisplayThread started.");
+  printFreeMemory(); // Affiche la mémoire libre au démarrage du thread
+  clearDisplay(ILI9341_T4_COLOR_WHITE);
+  drawIcon(0, H - 50, play_icon, 48, 48); // play
+  drawIcon(50, H - 50, pause_icon, 48, 48); // pause
+  drawIcon(100, H - 50, stop_icon, 48, 48); // stop
+  drawIcon(150, H - 50, restart_icon, 48, 48); // rewind
+  drawIcon(W - 50, 0, settings_icon, 48, 48); // next
+  drawTabulation();
 
+  int oldPlayingChordIndexDisplay = -1;
+  while (true) {
+    
+    uint32_t currentTime = isPlaying ? millis() - baseTime : pausedTime - baseTime;
+    //Serial.print("Current time: ");
+    //Serial.println(currentTime);
+    // Parcourir les 3 prochains accords (max)
+
+    if(currentPlayingChordIndex < currentSong.chordCount) {
+
+      Chord& chord = currentSong.chords[currentPlayingChordIndex];
+
+      for(uint8_t i = 0; i < chord.noteCount; ++i) {
+        Note& note = chord.notes[i];
+
+        // Dessiner la note sur le manche
+        drawNote(note.corde, note.caseFret, true, note.colorDisplay);
+      }
+    }
+    if(currentPlayingChordIndex != oldPlayingChordIndexDisplay) {
+      clearTabRegion();
+      drawTabulation();
+      oldPlayingChordIndexDisplay = currentPlayingChordIndex;
     }
     checkTouch();
     updateDisplay();
@@ -35,11 +56,11 @@ void UpdateAudioThread() {
     while (true) {
         if (currentPlayingChordIndex < currentSong.chordCount) {
             Chord& chord = currentSong.chords[currentPlayingChordIndex];
-            float freqs[Chord::MAX_NOTES] = {0};
-            float ths[Chord::MAX_NOTES] = {0};
+            float freqs[MAX_NOTES] = {0};
+            float ths[MAX_NOTES] = {0};
             for (uint8_t i = 0; i < chord.noteCount; ++i) {
-                freqs[i] = chord.notes[i].freq;
-                ths[i] = chord.notes[i].threshold;
+                freqs[i] = chord.notes[i].freq / 10.0; // Convertir en Hz
+                ths[i] = chord.notes[i].threshold / 1000.0; 
             }
             checkNoteDetection(freqs, ths);
         }
@@ -50,21 +71,33 @@ void UpdateAudioThread() {
 void updateLedsThread() {
     //int oldChordIndex = -1;
     while (true) {
+      Serial.print("currentPlayingChordIndex: ");
+      Serial.println(currentPlayingChordIndex);
+      Serial.print("oldPlayingChordIndex: ");
+      Serial.println(oldPlayingChordIndex);
         if (currentPlayingChordIndex != oldPlayingChordIndex) {
+          
             ledController.clear();
+            Serial.println("etape 1");
             Chord& chord = currentSong.chords[currentPlayingChordIndex];
+            Serial.println("etape 2");
             for (uint8_t i = 0; i < chord.noteCount; ++i) {
                 ledController.setLed(chord.notes[i].led, chord.notes[i].colorLed);
+                Serial.println("etape 3");
             }
-            for (uint8_t i = NUM_LEDS - 1; i >= chord.heightOfHand; --i) {
+            for (int8_t i = NUM_LEDS - 1; i >= chord.heightOfHand; --i) { /// YA un beug ici. tout s allume quand j ai fini mais au moins ca marche et c est joli
                 ledController.setLed(i, CRGB::Yellow); // ALLUME les LEDs au-dessus de la hauteur de la main
+                Serial.println("etape 4");
             }
             ledController.show();
+            Serial.println("etape 5");
             //old = currentPlayingChordIndex;
+          
         }
-        threads.delay(40);
+        threads.delay(100);
     }
 }
+
 
 void setup() {
   Serial.begin(115200);
@@ -113,9 +146,10 @@ void setup() {
   }
   Serial.println("leds initialized.");
   printFreeMemory(); // Affiche la mémoire libre après l'initialisation de l'
-  threads.addThread(UpdateDisplayThread);
-  threads.addThread(UpdateAudioThread);
-  threads.addThread(updateLedsThread);
+  threads.addThread(UpdateDisplayThread, 0, Threads::DEFAULT_STACK0_SIZE); // Utilise la taille de pile par défaut
+  threads.addThread(UpdateAudioThread, 0, Threads::DEFAULT_STACK0_SIZE); // Utilise la taille de pile par défaut
+  threads.addThread(updateLedsThread, 0, Threads::DEFAULT_STACK0_SIZE); // Utilise la taille de pile par défaut
+  // ajout d un thrad avec memoire statique
   Serial.println("Threads started.");
   printFreeMemory(); // Affiche la mémoire libre après le démarrage des threads
 }

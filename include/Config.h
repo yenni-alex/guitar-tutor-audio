@@ -23,8 +23,8 @@
 
 #define H 240    // screen dimension
 #define W 320
-#define TOP_BORDER 50    // set borders
-#define BOTTOM_BORDER 50
+#define TOP_BORDER 40    // set borders
+#define BOTTOM_BORDER 60
 #define LEFT_BORDER 15
 #define RIGHT_BORDER 100
 #define CORDS_ECART ((H-TOP_BORDER-BOTTOM_BORDER)/5)
@@ -42,5 +42,8 @@
 #define FFT_SIZE      4096
 #define BLOCK_SAMPLES 128
 #define SPI_SPEED_DISPLAY     30000000  // 30MHz SPI. Can do much better with short wires
+
+#define MAX_NOTES 6
+#define MAX_CHORDS 64
 
 #endif

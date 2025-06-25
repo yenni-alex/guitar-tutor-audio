@@ -35,7 +35,7 @@ void loadSongFromXML(const char* filename) {
         // Début d'un accord
         if (strstr(line, "<chord")) {
             Serial.println("lecture d'un accord");
-            if (currentSong.chordCount < Song::MAX_CHORDS) {
+            if (currentSong.chordCount < MAX_CHORDS) {
                 chord = &currentSong.chords[currentSong.chordCount++];
                 chord->noteCount = 0;
                 char buf[16];
@@ -45,7 +45,7 @@ void loadSongFromXML(const char* filename) {
             }
         }
         // Note
-        else if (strstr(line, "<note") && chord && chord->noteCount < Chord::MAX_NOTES) {
+        else if (strstr(line, "<note") && chord && chord->noteCount < MAX_NOTES) {
             Serial.println("lecture d'une note");
             float freq = 0, threshold = 0;
             uint8_t led = 255, corde = 255, caseFret = 255, color = 255;
@@ -59,7 +59,17 @@ void loadSongFromXML(const char* filename) {
             if (extractAttr(line, "caseFret", buf, sizeof(buf))) caseFret = atoi(buf);
             
             
-            chord->notes[chord->noteCount++] = Note(freq, threshold, color, led, corde, caseFret);
+            chord->notes[chord->noteCount++] = {
+                .colorInt = color,
+                .led = led,
+                .corde = corde,
+                .caseFret = caseFret,
+                .freq = (uint16_t)(freq * 10), 
+                .threshold = (uint16_t)(threshold * 1000),
+                .colorDisplay = parseColorDisplay(color),
+                .currentX = 0,
+                .colorLed = parseColorLed(color)
+            };
         }
     }
     Serial.print("Nombre d'accords lus : ");

@@ -20,7 +20,7 @@ bool ready_for_fft = false;
 DMAMEM Song currentSong;
 volatile int currentPlayingChordIndex = 0;
 volatile int oldPlayingChordIndex = -1;
-const int totalChords = Song::MAX_CHORDS;
+const int totalChords = MAX_CHORDS;
 
 void initAudio() {
     AudioMemory(80);
