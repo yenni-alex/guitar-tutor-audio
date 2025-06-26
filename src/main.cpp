@@ -67,9 +67,15 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
           
           if (targetX < W - 20) {
               drawCircle(targetX, y, 10, note.colorDisplay, true, 2);
+              if(chordIndex == currentPlayingChordIndex) {
+                drawCircle(targetX, y, 10, ILI9341_T4_COLOR_LIME, false, 5); // Dessine le cercle de la note en cours
+              } 
+          }
+           
+          if (chordIndex == currentPlayingChordIndex) {
+            drawNote(note.corde, note.caseFret, false, ILI9341_T4_COLOR_LIME, 5); // Dessine la note en cours
           }
           drawNote(note.corde, note.caseFret, false, note.colorDisplay);
-          
       }
 
       
@@ -144,7 +150,7 @@ void setup() {
   initAudio();
   ledController.begin();
   clearDisplay(ILI9341_T4_COLOR_WHITE);
-  delay(5000);
+  //delay(5000);
   Serial.println("Setup started.");
   printFreeMemory(); // Affiche la mémoire libre au démarrage
   SD.begin(BUILTIN_SDCARD);

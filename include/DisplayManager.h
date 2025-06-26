@@ -27,7 +27,7 @@ void drawLine(int x0, int y0, int x1, int y1, int thickness, uint16_t color);
 void drawRectangle(int x, int y, int width, int height, int thickness, uint16_t color);
 void drawRectangleCentered(int x, int y, int width, int height, int thickness, uint16_t color);
 void drawCircle(int x, int y, int radius, uint16_t color, bool fill, int thickness);
-void drawNote(int corde, int fret, bool fill, uint16_t color);
+void drawNote(int corde, int fret, bool fill, uint16_t color, int thickness = 1);
 void drawTabulation();
 void updateDisplay();
     
