@@ -28,6 +28,7 @@ struct Note {
 struct Chord {
     uint8_t noteCount; // Nombre de notes dans l'accord
     uint16_t time;          // Temps de décalage par rapport à l'accord précédent
+    uint32_t timeStart;     // TEST
     uint8_t heightOfHand;  // Hauteur de la main sur le manche
     Note notes[MAX_NOTES];
     

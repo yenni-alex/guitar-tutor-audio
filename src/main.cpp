@@ -18,7 +18,7 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
   drawIcon(50, H - 50, pause_icon, 48, 48); // pause
   drawIcon(100, H - 50, stop_icon, 48, 48); // stop
   drawIcon(150, H - 50, restart_icon, 48, 48); // rewind
-  drawIcon(W - 50, 0, settings_icon, 48, 48); // next
+  //drawIcon(W - 50, 0, settings_icon, 48, 48); // next
   drawTabulation();
   bool firstTime = true;
   int oldPlayingChordIndexDisplay = -1;
@@ -34,16 +34,43 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
 
       for(uint8_t i = 0; i < chord.noteCount; ++i) {
         Note& note = chord.notes[i];
+        /*
         if(firstTime) {
           note.currentX = W + getTargetX(note.caseFret);
         }
         else {
-          note.currentX -= 2; // Déplacement de la note vers la gauche
+          if(note.currentX > getTargetX(note.caseFret)) {
+            note.currentX -= 10; // Déplacement de la note vers la gauche
+          }
+          // else basetime = millis pour restart le timer
           Serial.print("Note currentX: ");
           Serial.println(note.currentX);
         }
+        */
+       // Calcul de progression temporelle de l'accord
+        uint32_t chordStartTime = chord.timeStart;  // il te faut ce champ (cf remarque plus bas)
+        uint32_t chordDuration = chord.time;        // durée totale de l'accord
+        float progression = (float)(currentTime - chordStartTime) / (float)chordDuration;
         
-        if(note.currentX < W - 20) {
+        // Clamp pour éviter les valeurs hors limites
+        if (progression < 0) progression = 0;
+        if (progression > 1) {
+          progression = 1;
+          if (isPlaying) {
+            pausedTime = millis();
+            isPlaying = false;
+          }
+        }
+        Serial.print("Progression: ");
+        Serial.println(progression);
+        // Position cible finale
+        int targetX = getTargetX(note.caseFret);
+        // Position initiale (hors écran à droite)
+        int startX = W + 50;
+
+        // Interpolation linéaire entre startX et targetX
+        note.currentX = startX + (targetX - startX) * progression;
+        if(note.currentX < W - 20) { 
           int y = TOP_BORDER + (note.corde - 1) * CORDS_ECART;
           drawCircle(note.currentX, y, 10, note.colorDisplay, false, 2); // Dessine un cercle pour la note
         }
@@ -52,7 +79,11 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
       firstTime = false; // Ne redessine les notes qu'une fois par accord
     }
     if(currentPlayingChordIndex != oldPlayingChordIndexDisplay) {
-      
+      if (!isPlaying) {
+        // Reprendre depuis la pause
+        baseTime += millis() - pausedTime;
+        isPlaying = true;
+      }
       oldPlayingChordIndexDisplay = currentPlayingChordIndex;
       firstTime = true; // Réinitialise pour redessiner les notes
     }
@@ -60,7 +91,7 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
     checkTouch();
     updateDisplay();
     //threads.delay(20);
-    threads.delay(100);
+    threads.delay(20);
   }
 }
 
@@ -126,6 +157,13 @@ void setup() {
     return;
   }
   loadSongFromXML("/test_gladiator_poly.xml");
+
+  uint32_t t = 0;             // TEST 
+  for (int i = 0; i < currentSong.chordCount; ++i) {
+    currentSong.chords[i].timeStart = t;
+    t += currentSong.chords[i].time;
+  }
+
   Serial.println("Song loaded from XML.");
   printFreeMemory(); // Affiche la mémoire libre après l'initialisation de la SD
   Serial.print("Accords lus: ");

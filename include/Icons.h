@@ -607,7 +607,7 @@ const uint16_t stop_icon [] PROGMEM = {
 
 
 
-
+/*
 
 // 'Ionic-Ionicons-Settings-sharp', 48x48px
 const uint16_t settings_icon [] PROGMEM = {
@@ -757,7 +757,7 @@ const uint16_t settings_icon [] PROGMEM = {
 	0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff
 };
 
-
+*/
 
 
 
