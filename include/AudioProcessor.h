@@ -26,6 +26,7 @@ struct Note {
 };
 
 struct Chord {
+    bool isPlayed;
     uint8_t noteCount; // Nombre de notes dans l'accord
     uint16_t time;          // Temps de décalage par rapport à l'accord précédent
     uint32_t timeStart;     // TEST

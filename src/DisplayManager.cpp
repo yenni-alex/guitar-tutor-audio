@@ -47,6 +47,10 @@ void onRestart() {
     oldPlayingChordIndex = -1; // Réinitialiser l'ancien index du chord
     baseTime = millis();
     isPlaying = true;
+    for(int i = 0; i < currentSong.chordCount; ++i) {
+        currentSong.chords[i].isPlayed = false; // Réinitialiser tous les accords à non joués
+    }
+    
   // ici ton code restart
 }
 IconButton play(0, H - 50, 48, onPlay); // Bouton de lecture

@@ -22,49 +22,58 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
   drawTabulation();
   bool firstTime = true;
   int oldPlayingChordIndexDisplay = -1;
+
+  const float pixelsPerMs = 0.1f; // 0.1 px/ms = 1000ms = 100px
+
   while (true) {
     clearTabRegion();
     drawTabulation();
     
     uint32_t currentTime = isPlaying ? millis() - baseTime : pausedTime - baseTime;
 
-    if(currentPlayingChordIndex < currentSong.chordCount) {
+    for (int chordIndex = 0; chordIndex < currentSong.chordCount; ++chordIndex) {
+      Chord& chord = currentSong.chords[chordIndex];
 
-      Chord& chord = currentSong.chords[currentPlayingChordIndex];
+      // Calcule position X de l'accord par rapport au temps courant
+      float deltaTime = (float)chord.timeStart - (float)currentTime;
+      float chordX = W + deltaTime * pixelsPerMs;
 
-      for(uint8_t i = 0; i < chord.noteCount; ++i) {
-        Note& note = chord.notes[i];
-       // Calcul de progression temporelle de l'accord
-        uint32_t chordStartTime = chord.timeStart;  // il te faut ce champ (cf remarque plus bas)
-        uint32_t chordDuration = chord.time;        // durée totale de l'accord
-        //float progression = (float)(currentTime - chordStartTime) / (float)chordDuration;
-        float progression = ((float)currentTime - (float)chordStartTime) / (float)chordDuration;
-        Serial.print("Progression: ");
-        Serial.println(progression);
-        // Clamp pour éviter les valeurs hors limites
-        if (progression < 0) progression = 0;
-        if (progression > 1) {
-          progression = 1;
+      if (chordIndex == currentPlayingChordIndex && !chord.isPlayed) {  // ←
+        float targetX = chordX + getTargetX( chord.notes[0].caseFret ); // ← une note suffit, elles arrivent ensemble
+        Serial.print(targetX);
+        Serial.print(" | ");
+        Serial.println(getTargetX(chord.notes[0].caseFret));
+        if (targetX <= getTargetX(chord.notes[0].caseFret)) {           // ← simple test de position atteinte
           if (isPlaying) {
             pausedTime = millis();
             isPlaying = false;
-          }
+          }   
+          Serial.println("GRRRRRRRRRRRRRR");                                        // ←
         }
-        
-        // Position cible finale
-        int targetX = getTargetX(note.caseFret);
-        // Position initiale (hors écran à droite)
-        int startX = W + 50;
-
-        // Interpolation linéaire entre startX et targetX
-        note.currentX = startX + (targetX - startX) * progression;
-        if(note.currentX < W - 20) { 
-          int y = TOP_BORDER + (note.corde - 1) * CORDS_ECART;
-          drawCircle(note.currentX, y, 10, note.colorDisplay, false, 2); // Dessine un cercle pour la note
-        }
-        drawNote(note.corde, note.caseFret, true, note.colorDisplay);
       }
-      firstTime = false; // Ne redessine les notes qu'une fois par accord
+      Serial.print("ChordX: ");
+      Serial.println(chordX);
+      // Si l'accord est complètement hors écran à gauche, on saute
+      //if (chordX + chordMaxWidth < 0) continue;
+      if (chord.isPlayed) continue;
+        // Si l'accord est complètement hors écran à droite, on arrête la boucle
+      if (chordX > W) break;
+      //if chordindex != currentPlayingchord
+      // Sinon, dessiner cet accord
+      for (uint8_t i = 0; i < chord.noteCount; ++i) {
+          Note& note = chord.notes[i];
+          int y = TOP_BORDER + (note.corde - 1) * CORDS_ECART;
+          int targetX = chordX + getTargetX(note.caseFret); // Position relative dans l'accord
+          
+          if (targetX < W - 20) {
+              drawCircle(targetX, y, 10, note.colorDisplay, true, 2);
+          }
+          drawNote(note.corde, note.caseFret, false, note.colorDisplay);
+          
+      }
+
+      
+
     }
     if(currentPlayingChordIndex != oldPlayingChordIndexDisplay) {
       if (!isPlaying) {
@@ -150,6 +159,7 @@ void setup() {
   for (int i = 0; i < currentSong.chordCount; ++i) {
     currentSong.chords[i].timeStart = t;
     t += currentSong.chords[i].time;
+    currentSong.chords[i].isPlayed = false; // Initialiser isPlayed à false
   }
 
   Serial.println("Song loaded from XML.");

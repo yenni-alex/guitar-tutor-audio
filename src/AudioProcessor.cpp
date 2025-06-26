@@ -104,6 +104,7 @@ bool checkNoteDetection(float frequencies[6], float thresholds[6]) {
             if(allNotesTrue){
                 Serial.print("   TOUTES LES NOTES JUSTE");
                 Serial.println();
+                currentSong.chords[currentPlayingChordIndex].isPlayed = true;
                 oldPlayingChordIndex = currentPlayingChordIndex;
                 currentPlayingChordIndex++;
 
