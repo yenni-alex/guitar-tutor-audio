@@ -34,24 +34,13 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
 
       for(uint8_t i = 0; i < chord.noteCount; ++i) {
         Note& note = chord.notes[i];
-        /*
-        if(firstTime) {
-          note.currentX = W + getTargetX(note.caseFret);
-        }
-        else {
-          if(note.currentX > getTargetX(note.caseFret)) {
-            note.currentX -= 10; // Déplacement de la note vers la gauche
-          }
-          // else basetime = millis pour restart le timer
-          Serial.print("Note currentX: ");
-          Serial.println(note.currentX);
-        }
-        */
        // Calcul de progression temporelle de l'accord
         uint32_t chordStartTime = chord.timeStart;  // il te faut ce champ (cf remarque plus bas)
         uint32_t chordDuration = chord.time;        // durée totale de l'accord
-        float progression = (float)(currentTime - chordStartTime) / (float)chordDuration;
-        
+        //float progression = (float)(currentTime - chordStartTime) / (float)chordDuration;
+        float progression = ((float)currentTime - (float)chordStartTime) / (float)chordDuration;
+        Serial.print("Progression: ");
+        Serial.println(progression);
         // Clamp pour éviter les valeurs hors limites
         if (progression < 0) progression = 0;
         if (progression > 1) {
@@ -61,8 +50,7 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
             isPlaying = false;
           }
         }
-        Serial.print("Progression: ");
-        Serial.println(progression);
+        
         // Position cible finale
         int targetX = getTargetX(note.caseFret);
         // Position initiale (hors écran à droite)
