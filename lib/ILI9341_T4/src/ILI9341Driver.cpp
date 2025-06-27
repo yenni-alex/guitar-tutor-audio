@@ -2274,7 +2274,38 @@ namespace ILI9341_T4
 
         }
 
+    FLASHMEM void ILI9341Driver::printText(uint16_t* fb, const char* text, int x, int y, int font_size, uint16_t font_color)
+        {
+        const ILI9341_t3_font_t * pfont;
+        if (font_size < 12)
+            pfont = &font_ILI9341_T4_OpenSans_Bold_10;
+        else if (font_size < 14)
+            pfont = &font_ILI9341_T4_OpenSans_Bold_12;
+        else if (font_size < 16)
+            pfont = &font_ILI9341_T4_OpenSans_Bold_14;
+        else 
+            pfont = &font_ILI9341_T4_OpenSans_Bold_16;
 
+        _drawTextILI(text, x, y, font_color, pfont, false, _width, _height, _width, fb, 1.0f);
+        }
+
+    FLASHMEM void ILI9341Driver::printTextCentered(uint16_t* fb, const char* text, int x, int y, int font_size, uint16_t font_color)
+        {
+        const ILI9341_t3_font_t * pfont;
+        if (font_size < 12)
+            pfont = &font_ILI9341_T4_OpenSans_Bold_10;
+        else if (font_size < 14)
+            pfont = &font_ILI9341_T4_OpenSans_Bold_12;
+        else if (font_size < 16)
+            pfont = &font_ILI9341_T4_OpenSans_Bold_14;
+        else 
+            pfont = &font_ILI9341_T4_OpenSans_Bold_16;
+        int min_x, max_x, min_y, max_y;
+        _measureText(text, x, y, min_x, max_x, min_y, max_y, pfont, false);
+        int dx = (max_x - min_x) / 2;
+        int dy = (max_y - min_y) / 2;
+        _drawTextILI(text, x - dx, y - dy, font_color, pfont, false, _width, _height, _width, fb, 1.0f);
+        }
 
 
 

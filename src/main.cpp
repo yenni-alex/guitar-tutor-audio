@@ -48,16 +48,15 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
             pausedTime = millis();
             isPlaying = false;
           }   
-          Serial.println("GRRRRRRRRRRRRRR");                                        // ←
         }
       }
-      Serial.print("ChordX: ");
-      Serial.println(chordX);
+      
       // Si l'accord est complètement hors écran à gauche, on saute
       //if (chordX + chordMaxWidth < 0) continue;
       if (chord.isPlayed) continue;
+      if (chordIndex > currentPlayingChordIndex + 1) break;    // + 1 pour afficher que l accord suivant
         // Si l'accord est complètement hors écran à droite, on arrête la boucle
-      if (chordX > W) break;
+      //if (chordX > W) break;                // pas necessaire je crois ca marche sans
       //if chordindex != currentPlayingchord
       // Sinon, dessiner cet accord
       for (uint8_t i = 0; i < chord.noteCount; ++i) {
@@ -67,8 +66,9 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
           
           if (targetX < W - 20) {
               drawCircle(targetX, y, 10, note.colorDisplay, true, 2);
+              
               if(chordIndex == currentPlayingChordIndex) {
-                drawCircle(targetX, y, 10, ILI9341_T4_COLOR_LIME, false, 5); // Dessine le cercle de la note en cours
+                drawCircle(targetX, y, 10, ILI9341_T4_COLOR_LIME, false, 5); // Dessine le cercle vert de la note en cours
               } 
           }
            
@@ -90,6 +90,10 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
       oldPlayingChordIndexDisplay = currentPlayingChordIndex;
       firstTime = true; // Réinitialise pour redessiner les notes
     }
+
+    char heightOfHandText[2];
+    sprintf(heightOfHandText, "%d", currentSong.chords[currentPlayingChordIndex].heightOfHandFret);
+    writeText(LEFT_BORDER, 30, heightOfHandText, ILI9341_T4_COLOR_BLACK, 16, true); // Affiche la hauteur de la main
 
     checkTouch();
     updateDisplay();
@@ -132,7 +136,7 @@ void updateLedsThread() {
             //        ledController.setLed(nextChord.notes[i].led, nextChord.notes[i].colorLed, 15); // Dim les LEDs de l'accord suivant
             //    }
             //}
-            for (int8_t i = NUM_LEDS - 1; i >= chord.heightOfHand; --i) { /// YA un beug ici. tout s allume quand j ai fini mais au moins ca marche et c est joli
+            for (int8_t i = NUM_LEDS - 1; i >= chord.heightOfHandLed; --i) { /// YA un beug ici. tout s allume quand j ai fini mais au moins ca marche et c est joli
                 ledController.setLed(i, CRGB::Yellow, 100); // ALLUME les LEDs au-dessus de la hauteur de la main
             }
             ledController.show();

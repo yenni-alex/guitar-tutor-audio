@@ -114,7 +114,7 @@ void clearDisplay(uint16_t color) {
 
 void clearTabRegion() {
     // Efface la zone de la tabulation
-    for (int y = TOP_BORDER - 10; y < H - BOTTOM_BORDER + 12; y++) {
+    for (int y = 10; y < H - BOTTOM_BORDER + 12; y++) {
         //for (int x = LEFT_BORDER - 10; x < W - RIGHT_BORDER + 10; x++) { // AVec l icone settings
         for (int x = 0; x <= W; x++) {                       // Sans l'icône settings + pour enlever le petit beug qui affiche le rond  a gauche
             fb[y * W + x] = ILI9341_T4_COLOR_WHITE;
@@ -268,6 +268,16 @@ void drawTabulation() {
     drawLine(LEFT_BORDER + FRET_ECART, TOP_BORDER, LEFT_BORDER + FRET_ECART, H - BOTTOM_BORDER - 1, 1, ILI9341_T4_COLOR_BLACK);
     drawLine(LEFT_BORDER + 2 * FRET_ECART, TOP_BORDER, LEFT_BORDER + 2 * FRET_ECART, H - BOTTOM_BORDER - 1, 1, ILI9341_T4_COLOR_BLACK);
     drawLine(LEFT_BORDER + 3 * FRET_ECART, TOP_BORDER, LEFT_BORDER + 3 * FRET_ECART, H - BOTTOM_BORDER - 1, 1, ILI9341_T4_COLOR_BLACK);
+}
+
+void writeText(uint16_t x, uint16_t y, const char* text, uint16_t color, uint8_t fontSize, bool centered) {
+    
+    if (centered) {
+        tft.printTextCentered(fb, text, x, y, fontSize, color); // draw centered text
+    }
+    else{
+        tft.printText(fb, text, x, y, fontSize, color); // draw text with specific color
+    }    
 }
 
 void updateDisplay() {

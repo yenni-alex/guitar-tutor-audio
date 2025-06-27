@@ -1000,6 +1000,9 @@ public:
     *       
     ****************************************************************************************************
     ****************************************************************************************************/
+    void printText(uint16_t* fb, const char* text, int x, int y, int font_size, uint16_t font_color);
+
+    void printTextCentered(uint16_t* fb, const char* text, int x, int y, int font_size, uint16_t font_color);
 
 
 

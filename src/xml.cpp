@@ -39,9 +39,10 @@ void loadSongFromXML(const char* filename) {
                 chord = &currentSong.chords[currentSong.chordCount++];
                 chord->noteCount = 0;
                 char buf[16];
-                chord->time = 0; chord->heightOfHand = 0;
+                chord->time = 0; chord->heightOfHandLed = 0; chord->heightOfHandFret = 0;
                 if (extractAttr(line, "time", buf, sizeof(buf))) chord->time = atoi(buf);
-                if (extractAttr(line, "heightOfHand", buf, sizeof(buf))) chord->heightOfHand = atoi(buf);
+                if (extractAttr(line, "heightOfHandLed", buf, sizeof(buf))) chord->heightOfHandLed = atoi(buf);
+                if (extractAttr(line, "heightOfHandFret", buf, sizeof(buf))) chord->heightOfHandFret = atoi(buf);
             }
         }
         // Note

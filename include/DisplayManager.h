@@ -29,6 +29,8 @@ void drawRectangleCentered(int x, int y, int width, int height, int thickness, u
 void drawCircle(int x, int y, int radius, uint16_t color, bool fill, int thickness);
 void drawNote(int corde, int fret, bool fill, uint16_t color, int thickness = 1);
 void drawTabulation();
+void writeText(uint16_t x, uint16_t y, const char* text, uint16_t color, uint8_t fontSize, bool centered = false);
+
 void updateDisplay();
     
 
