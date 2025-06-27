@@ -114,7 +114,7 @@ void clearDisplay(uint16_t color) {
 
 void clearTabRegion() {
     // Efface la zone de la tabulation
-    for (int y = TOP_BORDER - 10; y < H - BOTTOM_BORDER + 10; y++) {
+    for (int y = TOP_BORDER - 10; y < H - BOTTOM_BORDER + 12; y++) {
         //for (int x = LEFT_BORDER - 10; x < W - RIGHT_BORDER + 10; x++) { // AVec l icone settings
         for (int x = 0; x <= W; x++) {                       // Sans l'icône settings + pour enlever le petit beug qui affiche le rond  a gauche
             fb[y * W + x] = ILI9341_T4_COLOR_WHITE;
