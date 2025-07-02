@@ -40,9 +40,7 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
 
       if (chordIndex == currentPlayingChordIndex && !chord.isPlayed) {  // ←
         float targetX = chordX + getTargetX( chord.notes[0].caseFret ); // ← une note suffit, elles arrivent ensemble
-        Serial.print(targetX);
-        Serial.print(" | ");
-        Serial.println(getTargetX(chord.notes[0].caseFret));
+        
         if (targetX <= getTargetX(chord.notes[0].caseFret)) {           // ← simple test de position atteinte
           if (isPlaying) {
             pausedTime = millis();
