@@ -53,10 +53,19 @@ void onRestart() {
     
   // ici ton code restart
 }
+void onNext() {
+    Serial.println("Next clicked");
+    if (currentPlayingChordIndex < currentSong.chordCount - 1) {
+        currentPlayingChordIndex++;
+        oldPlayingChordIndex = -1; // Réinitialiser l'ancien index du chord
+    }
+}
+
 IconButton play(0, H - 50, 48, onPlay); // Bouton de lecture
 IconButton pause(50, H - 50, 48, onPause); // Bouton de pause
 IconButton stop(100, H - 50, 48, onStop); // Bout
 IconButton restart(150, H - 50, 48, onRestart); // Bouton de redémarrage
+IconButton next(W - 50, H - 50, 48, onNext); // Bouton de passage au prochain accord
 
 
 
@@ -93,6 +102,10 @@ void checkTouch() {
         else if(x >= stop.x && x <= stop.x + stop.size &&
                 y >= stop.y && y <= stop.y + stop.size) {
             stop.onClick(); // Call the stop function if the button is touched
+        }
+        else if(x >= next.x && x <= next.x + next.size &&
+                y >= next.y && y <= next.y + next.size) {
+            next.onClick(); // Call the next function if the button is touched
         }
         // Add your touch handling logic here
         

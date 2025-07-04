@@ -44,7 +44,7 @@ float computeGoertzelMagnitude(float* samples, int numSamples, float targetFreq,
     }
 
     float magnitude = sqrtf(q1 * q1 + q2 * q2 - q1 * q2 * coeff);
-    return magnitude / numSamples;  // Normalisation facultative
+    return magnitude / numSamples * 100;  // Normalisation facultative
 }
 
 bool checkNoteDetection(float frequencies[6], float thresholds[6]) {
