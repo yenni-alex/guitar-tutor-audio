@@ -31,7 +31,24 @@ void initAudio() {
     audioShield.inputLevel(1.0f); // Niveau d'entrée à 1.0 (100%)
     recorder.begin();
 }
-/*
+
+float computeGoertzelMagnitude(float* samples, int numSamples, float targetFreq, float sampleRate) {
+    float k = 0.5f + ((numSamples * targetFreq) / sampleRate);
+    int bin = (int)k;
+    float omega = (2.0f * PI * bin) / numSamples;
+    float coeff = 2.0f * cosf(omega);
+
+    float q0 = 0.0f, q1 = 0.0f, q2 = 0.0f;
+    for (int i = 0; i < numSamples; ++i) {
+        q0 = coeff * q1 - q2 + samples[i];
+        q2 = q1;
+        q1 = q0;
+    }
+
+    float magnitude = sqrtf(q1 * q1 + q2 * q2 - q1 * q2 * coeff);
+    return magnitude / numSamples * 100;  // Normalisation facultative
+}
+
 bool checkNoteDetection(float frequencies[6], float thresholds[6]) {
     int num_frequencies = 0;
     int freq_indices[6];
@@ -41,7 +58,6 @@ bool checkNoteDetection(float frequencies[6], float thresholds[6]) {
             num_frequencies++;
         }
     }
-    //if (currentPlayingNoteIndex >= totalNotes) return false;
     if (!ready_for_fft) {
         while (recorder.available() > 0 && sample_index < FFT_SIZE) {
             int16_t *data = recorder.readBuffer();
@@ -56,49 +72,19 @@ bool checkNoteDetection(float frequencies[6], float thresholds[6]) {
         }
     }
     if (ready_for_fft) {
-        for (int i = 0; i < FFT_SIZE; i++) {
-            fft_buffer[2 * i]     = input_buffer[i];
-            fft_buffer[2 * i + 1] = 0.0f;
-        }
-        arm_cfft_f32(&arm_cfft_sR_f32_len4096, fft_buffer, 0, 1);
-        float sample_rate = 44100.0;
-        float sum[num_frequencies];
-        for (int i = 0; i < num_frequencies; i++) {
-            sum[i] = 0.0f;
-        }
-        int N = 5;
+        float sample_rate = 44100.0f;
+        float magnitudes[6] = {0};
         for (int f = 0; f < num_frequencies; f++) {
-            float mags[N];
-            int count = 0;
-            for (int n = 1; n <= N; n++) {
-                float harmonic = frequencies[freq_indices[f]] * n;
-                int bin = round(harmonic / (sample_rate / FFT_SIZE));
-                if (bin < FFT_SIZE / 2) {
-                    float r = fft_buffer[2 * bin];
-                    float i = fft_buffer[2 * bin + 1];
-                    float mag = sqrtf(r * r + i * i) / (FFT_SIZE / 2.0f);
-                    mags[count++] = mag;
-                }
-            }
-            if (count > 0) {
-                std::sort(mags, mags + count);
-                if (count % 2 == 1) {
-                    sum[f] = mags[count / 2];
-                } else {
-                    sum[f] = (mags[count / 2 - 1] + mags[count / 2]) / 2.0f;
-                }
-            } else {
-                sum[f] = 0.0f;
-            }
+            magnitudes[f] = computeGoertzelMagnitude(input_buffer, FFT_SIZE, frequencies[freq_indices[f]], sample_rate);
         }
         bool allNotesTrue = true;
         float rms_ = rms.read();
         if((peak.readPeakToPeak()/2 > 0.1) && (rms_ > 0.1)){
             for (int f = 0; f < num_frequencies; f++) {
-                if(sum[f] < thresholds[freq_indices[f]]) {
+                if(magnitudes[f] < thresholds[freq_indices[f]]) {
                     allNotesTrue = false;
                 }
-                Serial.print(sum[f]);
+                Serial.print(magnitudes[f]);
                 Serial.print(" (th: ");
                 Serial.print(thresholds[freq_indices[f]]);
                 Serial.print(") - ");
@@ -109,7 +95,6 @@ bool checkNoteDetection(float frequencies[6], float thresholds[6]) {
                 currentSong.chords[currentPlayingChordIndex].isPlayed = true;
                 oldPlayingChordIndex = currentPlayingChordIndex;
                 currentPlayingChordIndex++;
-
             } else {
                 Serial.print("   FAUX");
                 Serial.println();
@@ -121,7 +106,7 @@ bool checkNoteDetection(float frequencies[6], float thresholds[6]) {
     return false;
 }
 
-*/
+
 
 // Variables globales (à initialiser au début)
 float rmsPeakRatio_Threshold = 0.4f; // Ratio RMS/Peak pour seuil
