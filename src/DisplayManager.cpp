@@ -78,9 +78,19 @@ void mapTouchToScreen(int raw_x, int raw_y, int &screen_x, int &screen_y) {
     screen_y = constrain(screen_y, 0, H - 1);
 }
 
+// Ajout pour l'anti-rebond tactile
+unsigned long lastTouchTime = 0;
+const unsigned long debounceDelay = 250; // délai en ms
+
 void checkTouch() {
     TSPoint p = ts.getPoint();
     if (p.z > 100) { // Adjust threshold as needed
+        unsigned long now = millis();
+        if (now - lastTouchTime < debounceDelay) {
+            // Trop tôt depuis le dernier appui, on ignore
+            return;
+        }
+        lastTouchTime = now;
         int x, y;
         // Map touch coordinates to screen coordinates
         mapTouchToScreen(p.x, p.y, x, y);

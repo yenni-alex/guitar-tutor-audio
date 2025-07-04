@@ -20,7 +20,7 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
   drawIcon(150, H - 50, restart_icon, 48, 48); // rewind
   //drawIcon(W - 50, 0, settings_icon, 48, 48); // next
   drawIcon(W - 50, H - 50, next_icon, 48, 48); // next
-  drawTabulation();
+  drawTabulation(); 
   bool firstTime = true;
   int oldPlayingChordIndexDisplay = -1;
 
