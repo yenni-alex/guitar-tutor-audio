@@ -40,9 +40,7 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
 
       if (chordIndex == currentPlayingChordIndex && !chord.isPlayed) {  // ←
         float targetX = chordX + getTargetX( chord.notes[0].caseFret ); // ← une note suffit, elles arrivent ensemble
-        Serial.print(targetX);
-        Serial.print(" | ");
-        Serial.println(getTargetX(chord.notes[0].caseFret));
+        
         if (targetX <= getTargetX(chord.notes[0].caseFret)) {           // ← simple test de position atteinte
           if (isPlaying) {
             pausedTime = millis();
@@ -159,11 +157,11 @@ void setup() {
   printFreeMemory(); // Affiche la mémoire libre au démarrage
   SD.begin(BUILTIN_SDCARD);
   Serial.println("SD card initialized");
-  if (!SD.exists("/test_gladiator_poly.xml")) {
+  if (!SD.exists("/HOBBIT.xml")) {
     Serial.println("Fichier test_gladiator.xml introuvable");
     return;
   }
-  loadSongFromXML("/test_gladiator_poly.xml");
+  loadSongFromXML("/HOBBIT.xml");
 
   uint32_t t = 0;             // TEST 
   for (int i = 0; i < currentSong.chordCount; ++i) {

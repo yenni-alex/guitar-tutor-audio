@@ -22,6 +22,18 @@ volatile int currentPlayingChordIndex = 0;
 volatile int oldPlayingChordIndex = -1;
 const int totalChords = MAX_CHORDS;
 
+float last_rms = 0.0f;
+unsigned long last_onset_time = 0;
+const unsigned long onset_debounce_ms = 150; // Anti-rebond sur la détection d'attaque
+const float rms_jump_threshold = 3.0f; // Seuil de variation rapide du RMS (à ajuster)
+
+// --- Période d'analyse après détection d'attaque ---
+bool analyse_en_cours = false;
+unsigned long analyse_start_time = 0;
+const unsigned long analyse_duree_ms = 100; // Durée de la période d'analyse (modifiable)
+int analyse_nb_juste = 0;
+int analyse_nb_faux = 0;
+
 void initAudio() {
     AudioMemory(80);
     audioShield.enable();
@@ -90,9 +102,31 @@ bool checkNoteDetection(float frequencies[6], float thresholds[6]) {
             }
         }
         bool allNotesTrue = true;
-        float rms_ = rms.read();
-        if((peak.readPeakToPeak()/2 > 0.1) && (rms_ > 0.1)){
+        float rms_ = rms.read() * 100.0f; 
+        float peak_to_peak = peak.readPeakToPeak() / 2.0f * 100.0f;
+        float rms_diff = rms_ - last_rms;
+        last_rms = rms_;
+        unsigned long now = millis();
+        bool onset = false;
+        if((peak_to_peak > 10) && (rms_ > 5)){
+            if (rms_diff > rms_jump_threshold && (now - last_onset_time > onset_debounce_ms) && !analyse_en_cours) {
+                onset = true;
+                last_onset_time = now;
+            }
+            // Démarrage de la période d'analyse après détection d'attaque
+            if (onset) {
+                analyse_en_cours = true;
+                analyse_start_time = now;
+                analyse_nb_juste = 0;
+                analyse_nb_faux = 0;
+                Serial.println("--- Début période d'analyse ---");
+            }
+        }
+        if(analyse_en_cours) {
             for (int f = 0; f < num_frequencies; f++) {
+                sum[f] *= 100.0f; // Convertir en pourcentage
+                thresholds[freq_indices[f]] *= 100.0f; // Convertir en pourcentage
+                
                 if(sum[f] < thresholds[freq_indices[f]]) {
                     allNotesTrue = false;
                 }
@@ -104,17 +138,34 @@ bool checkNoteDetection(float frequencies[6], float thresholds[6]) {
             if(allNotesTrue){
                 Serial.print("   TOUTES LES NOTES JUSTE");
                 Serial.println();
-                currentSong.chords[currentPlayingChordIndex].isPlayed = true;
-                oldPlayingChordIndex = currentPlayingChordIndex;
-                currentPlayingChordIndex++;
+                analyse_nb_juste++;
+                
 
             } else {
                 Serial.print("   FAUX");
                 Serial.println();
+                analyse_nb_faux++;
+            }
+            if (now - analyse_start_time >= analyse_duree_ms) {
+                Serial.println("--- Fin période d'analyse ---");
+                Serial.print("Nombre de notes justes : ");
+                Serial.println(analyse_nb_juste);
+                Serial.print("Nombre de notes fausses : ");
+                Serial.println(analyse_nb_faux);
+                if (analyse_nb_juste >= 1) {
+                    Serial.println("==> NOTE JUSTE !");
+                    currentSong.chords[currentPlayingChordIndex].isPlayed = true;
+                    oldPlayingChordIndex = currentPlayingChordIndex;
+                    currentPlayingChordIndex++;
+
+                } else {
+                    Serial.println("==> NOTE FAUSSE !");
+                }
+                analyse_en_cours = false;
             }
         }
         ready_for_fft = false;
-        return allNotesTrue;
+        return false;
     }
     return false;
 }
