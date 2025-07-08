@@ -91,3 +91,6 @@ uint16_t parseColorDisplay(int colorInt) {
     }
     return color;
 }
+
+volatile uint32_t borderColorUntil = 0;
+volatile uint16_t borderColor = 0;

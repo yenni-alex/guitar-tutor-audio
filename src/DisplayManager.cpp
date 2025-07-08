@@ -1,4 +1,5 @@
 #include "DisplayManager.h"
+#include "global.h"
 
 
 ILI9341_T4::ILI9341Driver tft(PIN_CS, PIN_DC, PIN_SCK, PIN_MOSI, PIN_MISO, PIN_RESET, PIN_TOUCH_CS, PIN_TOUCH_IRQ);
@@ -255,9 +256,13 @@ void drawNote(int corde, int fret, bool fill, uint16_t color, int thickness) {
 
 
 void drawTabulation() {
-
-    drawRectangle(LEFT_BORDER, TOP_BORDER, W -(RIGHT_BORDER + LEFT_BORDER), H -(TOP_BORDER + BOTTOM_BORDER), 3, ILI9341_T4_COLOR_BLACK);
-    
+    // Affiche la bordure SEULEMENT si borderColorUntil > millis()
+    if (borderColorUntil > millis()) {
+        drawRectangle(LEFT_BORDER, TOP_BORDER, W -(RIGHT_BORDER + LEFT_BORDER), H -(TOP_BORDER + BOTTOM_BORDER), 3, borderColor);
+    }
+    else {
+        drawRectangle(LEFT_BORDER, TOP_BORDER, W -(RIGHT_BORDER + LEFT_BORDER), H -(TOP_BORDER + BOTTOM_BORDER), 3, ILI9341_T4_COLOR_BLACK);
+    }
     // cords lines
     drawLine(LEFT_BORDER, TOP_BORDER + CORDS_ECART, W - RIGHT_BORDER - 1, TOP_BORDER + CORDS_ECART, 3, ILI9341_T4_COLOR_BLACK);
     drawLine(LEFT_BORDER, TOP_BORDER + 2 * CORDS_ECART, W - RIGHT_BORDER - 1, TOP_BORDER + 2 * CORDS_ECART, 3, ILI9341_T4_COLOR_BLACK);

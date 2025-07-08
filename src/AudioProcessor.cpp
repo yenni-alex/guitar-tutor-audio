@@ -1,6 +1,7 @@
 #include "AudioProcessor.h"
 #include <TeensyThreads.h>
 #include "DisplayManager.h" // Pour les couleurs ILI9341_T4_COLOR_*
+#include "global.h"
 
 AudioInputI2S            i2s1;
 AudioRecordQueue         recorder;
@@ -166,9 +167,12 @@ bool checkNoteDetection(float frequencies[6], float thresholds[6]) {
                     currentSong.chords[currentPlayingChordIndex].isPlayed = true;
                     oldPlayingChordIndex = currentPlayingChordIndex;
                     currentPlayingChordIndex++;
-
+                    borderColor = ILI9341_T4_COLOR_LIME;
+                    borderColorUntil = millis() + 200;
                 } else {
                     Serial.println("==> NOTE FAUSSE !");
+                    borderColor = ILI9341_T4_COLOR_RED;
+                    borderColorUntil = millis() + 200;
                 }
                 analyse_en_cours = false;
             }

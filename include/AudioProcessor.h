@@ -47,6 +47,8 @@ extern volatile int currentPlayingChordIndex;
 extern volatile int oldPlayingChordIndex;
 extern const int totalChords;
 
+extern bool onset;
+
 void initAudio();
 bool checkNoteDetection(float frequencies[6], float thresholds[6]);
 

@@ -8,6 +8,8 @@
 extern bool isPlaying;
 extern uint32_t baseTime;      
 extern uint32_t pausedTime;    
+extern volatile uint32_t borderColorUntil;
+extern volatile uint16_t borderColor;
 
 extern "C" char* sbrk(int incr);
 CRGB parseColorLed(int colorInt);
