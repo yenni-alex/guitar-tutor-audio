@@ -127,9 +127,18 @@ bool checkNoteDetection(float frequencies[6], float thresholds[6]) {
                 sum[f] *= 100.0f; // Convertir en pourcentage
                 thresholds[freq_indices[f]] *= 100.0f; // Convertir en pourcentage
                 
-                if(sum[f] < thresholds[freq_indices[f]]) {
+                /* if(sum[f] < thresholds[freq_indices[f]]) {
+                    allNotesTrue = false;
+                } */
+                if (sum[f] * sum[f] / (rms_ * peak_to_peak) * 100.0f < 0.6f) {
                     allNotesTrue = false;
                 }
+                Serial.print("rms  : ");
+                Serial.print(rms_);
+                Serial.print("  peak  : ");
+                Serial.print(peak_to_peak);
+                Serial.print("  * : ");
+                Serial.println(sum[f] * sum[f] / (rms_ * peak_to_peak) * 100.0f);
                 Serial.print(sum[f]);
                 Serial.print(" (th: ");
                 Serial.print(thresholds[freq_indices[f]]);
