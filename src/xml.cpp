@@ -41,7 +41,7 @@ void loadSongFromXML(const char* filename) {
                 char buf[16];
                 chord->time = 0; chord->heightOfHandLed = 0; chord->heightOfHandFret = 0;
                 if (extractAttr(line, "time", buf, sizeof(buf))) chord->time = atoi(buf);
-                if (extractAttr(line, "heightOfHandLed", buf, sizeof(buf))) chord->heightOfHandLed = atoi(buf);
+                if (extractAttr(line, "heightOfHandLeds", buf, sizeof(buf))) chord->heightOfHandLed = atoi(buf);
                 if (extractAttr(line, "heightOfHandFret", buf, sizeof(buf))) chord->heightOfHandFret = atoi(buf);
             }
         }

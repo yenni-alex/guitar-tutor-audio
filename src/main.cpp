@@ -18,7 +18,6 @@ void UpdateDisplayThread() {      // TODO goertzel... annimation jouer avec tail
   drawIcon(50, H - 50, pause_icon, 48, 48); // pause
   drawIcon(100, H - 50, stop_icon, 48, 48); // stop
   drawIcon(150, H - 50, restart_icon, 48, 48); // rewind
-  //drawIcon(W - 50, 0, settings_icon, 48, 48); // next
   drawTabulation();
   bool firstTime = true;
   int oldPlayingChordIndexDisplay = -1;
@@ -157,11 +156,11 @@ void setup() {
   printFreeMemory(); // Affiche la mémoire libre au démarrage
   SD.begin(BUILTIN_SDCARD);
   Serial.println("SD card initialized");
-  if (!SD.exists("/HOBBIT.xml")) {
+  if (!SD.exists("/ERIKA.xml")) {
     Serial.println("Fichier test_gladiator.xml introuvable");
     return;
   }
-  loadSongFromXML("/HOBBIT.xml");
+  loadSongFromXML("/ERIKA.xml");
 
   uint32_t t = 0;             // TEST 
   for (int i = 0; i < currentSong.chordCount; ++i) {
